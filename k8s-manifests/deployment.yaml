@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fast-food-deployment
+  namespace: default
+spec:
+  replicas: 2 # Garante que sempre existam 2 pods rodando
+  selector:
+    matchLabels:
+      app: fast-food # O Deployment gerencia apenas pods com essa label
+  template:
+    metadata:
+      labels:
+        app: fast-food # Todos os pods criados terão essa label
+    spec:
+      containers:
+        - name: fast-food
+          image: maickway/fast-food-api:tagname # Imagem da API
+          ports:
+            - containerPort: 3000 # API rodando na porta 3000
+          env:
+            - name: MONGODB_URI
+              value: mongodb://localhost:27017/mong # Conexão com MongoDB
+            - name: APP_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: fast-food-config
+                  key: APP_ENV # Pega do ConfigMap
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: fast-food-config
+                  key: LOG_LEVEL # Pega do ConfigMap
+        - name: mongo
+          image: mongo:latest # Banco de dados MongoDB
+          ports:
+            - containerPort: 27017 # MongoDB rodando na porta 27017
